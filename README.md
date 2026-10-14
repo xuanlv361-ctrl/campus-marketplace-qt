@@ -128,4 +128,3 @@ For the smoothest Windows setup, open the folder directly in Qt Creator, select 
 ## Author
 
 Developed as a university software engineering and database project, with a focus on C++ desktop development, relational data design and user-centred interface implementation.
-
