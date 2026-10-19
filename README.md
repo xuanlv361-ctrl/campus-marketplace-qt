@@ -17,8 +17,8 @@ The application combines a consumer-facing marketplace experience with an operat
 - Shared data access layer that keeps stock, sales, orders and reporting in sync
 - Data visualisation for category sales and live operational metrics
 - Runtime Chinese/English language switching with the selection persisted between windows and sessions
-- Twenty seeded marketplace listings with a one-to-one product image mapping
-- Extended relational schema for favourites, persistent carts, messages and licensed product assets
+- Thirty-two seeded marketplace listings with a one-to-one product image mapping
+- Extended relational schema for favourites, carts, messages, addresses, payments, fulfilment, reviews, notifications, moderation and licensed product assets
 
 ## Technology Stack
 
@@ -85,6 +85,8 @@ Import the included schema, then set the following environment variables in Qt C
 mysql -u root -p < database/schema.sql
 ```
 
+See [database/README.md](database/README.md) for the entity groups, reporting views and seed-data overview.
+
 ```text
 SECONDHAND_DB_HOST=127.0.0.1
 SECONDHAND_DB_PORT=3306
@@ -104,7 +106,7 @@ These sample credentials are intentionally non-production data. Real deployments
 
 ### Product catalogue assets
 
-The seed catalogue contains 20 products across eight categories. Every seeded product stores a dedicated relative `image_path`, and `ProductAsset` records the corresponding source URL and licence metadata. The bundled image files live in `ui_assets/products` and are copied beside the executable by CMake.
+The seed catalogue contains 32 products across eleven categories. Every seeded product stores a dedicated relative `image_path`, and `ProductAsset` records the corresponding source URL and licence metadata. The schema also includes campus addresses, multi-image listings, payment and fulfilment records, reviews, notifications, reports, search history, view analytics and administrator audit logs. The bundled image files live in `ui_assets/products` and are copied beside the executable by CMake.
 
 See [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) for the product-to-image mapping and source information.
 

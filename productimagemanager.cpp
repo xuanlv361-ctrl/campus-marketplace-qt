@@ -75,7 +75,19 @@ QHash<QString, QString> bundledProductImages()
         {text("篮球"), "basketball.jpg"},
         {text("瑜伽垫"), "yoga_mat.jpg"},
         {text("校园自行车"), "bicycle.jpg"},
-        {text("折叠滑板车"), "scooter.jpg"}
+        {text("折叠滑板车"), "scooter.jpg"},
+        {text("iPad Air 平板"), "tablet_ipad.jpg"},
+        {text("24英寸显示器"), "monitor.jpg"},
+        {text("无线办公鼠标"), "wireless_mouse.jpg"},
+        {text("便携打印机"), "compact_printer.jpg"},
+        {text("宿舍电热水壶"), "electric_kettle.jpg"},
+        {text("轻薄连帽卫衣"), "hoodie.jpg"},
+        {text("网球拍"), "tennis_racket.jpg"},
+        {text("六角哑铃一对"), "dumbbells.jpg"},
+        {text("校园长板"), "skateboard.jpg"},
+        {text("民谣木吉他"), "acoustic_guitar.jpg"},
+        {text("复古拍立得相机"), "instant_camera.jpg"},
+        {text("USB-C扩展坞"), "usb_c_hub.jpg"}
     };
 }
 

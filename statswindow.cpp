@@ -62,7 +62,7 @@ QPushButton *sidebarButton(const QString &text, const char *name = "SidebarButto
 
 QStringList preferredCategories()
 {
-    return {"代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"};
+    return {"代步工具", "电子数码", "办公设备", "服饰鞋包", "美妆零食", "宿舍用品", "小家电", "学习资料", "运动器材", "音乐乐器"};
 }
 
 QStringList statsCategories()
@@ -75,11 +75,14 @@ QString normalizedStatsCategory(const QString &category)
     const QString text = category.trimmed();
     if (text == "代步工具" || text.contains("代步")) return "代步工具";
     if (text == "电子数码" || text.contains("数码") || text.contains("电子")) return "电子数码";
+    if (text == "办公设备" || text.contains("办公")) return "办公设备";
     if (text == "服饰鞋包" || text.contains("服饰") || text.contains("鞋") || text.contains("包")) return "服饰鞋包";
     if (text == "美妆零食" || text.contains("美妆") || text.contains("个护") || text.contains("零食") || text.contains("食品")) return "美妆零食";
     if (text == "宿舍用品" || text.contains("宿舍") || text.contains("生活")) return "宿舍用品";
-    if (text == "学习资料" || text.contains("教材") || text.contains("书籍") || text.contains("学习") || text.contains("办公")) return "学习资料";
+    if (text == "小家电" || text.contains("家电")) return "小家电";
+    if (text == "学习资料" || text.contains("教材") || text.contains("书籍") || text.contains("学习")) return "学习资料";
     if (text == "运动器材" || text.contains("运动")) return "运动器材";
+    if (text == "音乐乐器" || text.contains("音乐") || text.contains("乐器")) return "音乐乐器";
     if (text.contains("闲置")) return "宿舍用品";
     return statsCategories().contains(text) ? text : "宿舍用品";
 }
