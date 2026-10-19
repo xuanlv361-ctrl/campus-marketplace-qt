@@ -1,6 +1,7 @@
 ﻿#include "statswindow.h"
 
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "mainwindow.h"
 #include "welcomewindow.h"
 
@@ -130,6 +131,7 @@ QFrame *createSidebar(const QString &active, MainWindow *mainWindow, QWidget *se
         layout->addWidget(btn);
     }
     layout->addStretch();
+    layout->addWidget(LanguageManager::instance().createSelector(sidebar));
     auto *home = sidebarButton("↩  返回首页");
     QObject::connect(home, &QPushButton::clicked, self, [=]() { auto *w = new WelcomeWindow(); w->show(); self->hide(); });
     auto *exit = sidebarButton("🚪  退出系统", "ExitButton");

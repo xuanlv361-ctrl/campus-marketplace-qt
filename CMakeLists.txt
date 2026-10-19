@@ -17,6 +17,9 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
 set(PROJECT_SOURCES
     main.cpp
 
+    languagemanager.h
+    languagemanager.cpp
+
     welcomewindow.h
     welcomewindow.cpp
 

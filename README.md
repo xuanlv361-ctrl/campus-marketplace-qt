@@ -1,8 +1,8 @@
 # Campus Marketplace
 
-A desktop second-hand marketplace for university communities, built with modern C++ and Qt Widgets. The application supports the complete journey from discovering and listing pre-owned items to purchasing, order tracking, moderation and operational reporting.
+A product-focused desktop marketplace for university communities, built with modern C++ and Qt Widgets. The application supports the complete journey from discovering and listing pre-owned items to purchasing, order tracking, moderation and operational reporting.
 
-The project combines a warm, consumer-facing marketplace experience with a practical administration dashboard. It was designed to demonstrate desktop UI engineering, relational data modelling and end-to-end business workflow implementation.
+The application combines a consumer-facing marketplace experience with an operational administration dashboard. Its architecture is intended to remain useful beyond a classroom demo: shared data access, portable assets, bilingual interface support and traceable catalogue media are treated as product requirements.
 
 ## Highlights
 
@@ -16,6 +16,9 @@ The project combines a warm, consumer-facing marketplace experience with a pract
 - Product approval, rejection, listing status management and destructive-action confirmations
 - Shared data access layer that keeps stock, sales, orders and reporting in sync
 - Data visualisation for category sales and live operational metrics
+- Runtime Chinese/English language switching with the selection persisted between windows and sessions
+- Twenty seeded marketplace listings with a one-to-one product image mapping
+- Extended relational schema for favourites, persistent carts, messages and licensed product assets
 
 ## Technology Stack
 
@@ -99,6 +102,12 @@ The schema includes demonstration accounts for local development only:
 
 These sample credentials are intentionally non-production data. Real deployments should hash passwords and remove or replace the seed accounts.
 
+### Product catalogue assets
+
+The seed catalogue contains 20 products across eight categories. Every seeded product stores a dedicated relative `image_path`, and `ProductAsset` records the corresponding source URL and licence metadata. The bundled image files live in `ui_assets/products` and are copied beside the executable by CMake.
+
+See [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) for the product-to-image mapping and source information.
+
 ### Configure and build
 
 ```bash
@@ -127,4 +136,4 @@ For the smoothest Windows setup, open the folder directly in Qt Creator, select 
 
 ## Author
 
-Developed as a university software engineering and database project, with a focus on C++ desktop development, relational data design and user-centred interface implementation.
+Designed and developed as a portfolio-grade C++ desktop product, with a focus on marketplace workflows, relational data design and user-centred interface engineering.

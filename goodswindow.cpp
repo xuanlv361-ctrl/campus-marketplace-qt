@@ -1,5 +1,6 @@
 #include "goodswindow.h"
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "mainwindow.h"
 #include "productimagemanager.h"
 #include "welcomewindow.h"
@@ -87,7 +88,7 @@ void styleButton(QPushButton *button, const char *name)
 
 QStringList productCategories()
 {
-    return {"代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"};
+    return {"书籍教材", "学习资料", "电子数码", "宿舍用品", "服饰鞋包", "运动器材", "代步工具", "美妆零食"};
 }
 
 QStringList productConditions()
@@ -198,11 +199,11 @@ bool editProductDialog(QWidget *parent, const QString &title, const MarketplaceG
 
     MarketplaceGoods edited = initial;
     edited.name = nameEdit->text().trimmed();
-    edited.category = categoryBox->currentText();
+    edited.category = LanguageManager::instance().comboValue(categoryBox);
     edited.price = priceSpin->value();
     edited.stock = stockSpin->value();
     edited.seller = sellerEdit->text().trimmed();
-    edited.condition = conditionBox->currentText();
+    edited.condition = LanguageManager::instance().comboValue(conditionBox);
     edited.description = descEdit->toPlainText().trimmed();
     const QString imagePath = imagePathEdit->text().trimmed();
     edited.imagePath = imagePath;
@@ -367,6 +368,7 @@ QFrame *createSidebar(const QString &active, MainWindow *mainWindow, QWidget *se
         layout->addWidget(btn);
     }
     layout->addStretch();
+    layout->addWidget(LanguageManager::instance().createSelector(sidebar));
     auto *home = sidebarButton("↩  返回首页");
     QObject::connect(home, &QPushButton::clicked, self, [=]() { auto *w = new WelcomeWindow(); w->show(); self->hide(); });
     auto *exit = sidebarButton("🚪  退出系统", "ExitButton");
@@ -443,7 +445,14 @@ QString niceName(const GoodsItem &item)
 
 QString imagePathFor(const GoodsItem &item)
 {
-    return ProductImageManager::imagePathForProduct(niceName(item), item.category);
+    QString preferredPath;
+    for (const MarketplaceGoods &goods : AccountStore::goods()) {
+        if (goods.id == item.id) {
+            preferredPath = goods.imagePath;
+            break;
+        }
+    }
+    return ProductImageManager::imagePathForProduct(niceName(item), item.category, preferredPath);
 }
 
 QLabel *thumbLabel(const GoodsItem &item)
@@ -639,7 +648,7 @@ GoodsWindow::GoodsWindow(MainWindow *mainWindow, QWidget *parent, bool showPendi
 
     loadSampleData();
     if (showPendingOnOpen) {
-        comboStatus->setCurrentText("待审核");
+        LanguageManager::instance().setComboValue(comboStatus, "待审核");
         searchGoods();
     }
 
@@ -755,7 +764,7 @@ void GoodsWindow::updateTable(const QVector<GoodsItem> &items)
                 if (AccountStore::updateGoodsStatus(item.id, "已上架")) {
                     QMessageBox::information(this, "审核通过", niceName(item) + " 已通过审核并上架。");
                     loadSampleData();
-                    comboStatus->setCurrentText("已上架");
+                    LanguageManager::instance().setComboValue(comboStatus, "已上架");
                     searchGoods();
                 } else {
                     QMessageBox::warning(this, "审核失败", "商品状态更新失败，请确认数据库连接正常。");
@@ -776,8 +785,8 @@ void GoodsWindow::updateTable(const QVector<GoodsItem> &items)
 void GoodsWindow::searchGoods()
 {
     const QString keyword = editSearch->text().trimmed();
-    const QString category = comboCategory->currentText();
-    const QString status = comboStatus->currentText();
+    const QString category = LanguageManager::instance().comboValue(comboCategory);
+    const QString status = LanguageManager::instance().comboValue(comboStatus);
     QVector<GoodsItem> result;
     for (const MarketplaceGoods &item : AccountStore::searchGoods(keyword, category, status)) {
         result.push_back({item.id, item.name, item.category, QString::number(item.price, 'f', 2), QString::number(item.stock), QString::number(item.sales), item.status});
@@ -797,7 +806,7 @@ void GoodsWindow::refreshGoods()
 void GoodsWindow::showPendingGoods()
 {
     loadSampleData();
-    comboStatus->setCurrentText("待审核");
+    LanguageManager::instance().setComboValue(comboStatus, "待审核");
     searchGoods();
 }
 
@@ -840,7 +849,7 @@ void GoodsWindow::addGoods()
                                  : "商品新增失败，原因：\n" + errorMessage);
         return;
     }
-    comboStatus->setCurrentText("已上架");
+    LanguageManager::instance().setComboValue(comboStatus, "已上架");
     comboCategory->setCurrentIndex(0);
     editSearch->setText(edited.name);
     loadSampleData();

@@ -1,5 +1,6 @@
 #include "userhomewindow.h"
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "productimagemanager.h"
 #include "welcomewindow.h"
 
@@ -158,36 +159,17 @@ struct CategoryDisplayItem
 
 QVector<CategoryDisplayItem> scannedCategoryItems()
 {
-    const QString configuredRoot = qEnvironmentVariable("SECONDHAND_IMAGE_ROOT").trimmed();
-    const QString root = configuredRoot.isEmpty()
-                             ? QDir(QApplication::applicationDirPath()).filePath("ui_assets/catalog")
-                             : configuredRoot;
-    const QStringList categories = {"代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"};
-    const QStringList filters = {"*.jpg", "*.jpeg", "*.png", "*.webp"};
     QVector<CategoryDisplayItem> items;
 
-    for (const QString &category : categories) {
-        QDir dir(root + "/" + category);
-        if (!dir.exists()) {
-            qDebug() << "Category directory not found:" << dir.absolutePath();
-            continue;
-        }
-
-        const QFileInfoList files = dir.entryInfoList(filters, QDir::Files, QDir::Name | QDir::IgnoreCase);
-        int index = 0;
-        for (const QFileInfo &file : files) {
-            const QString productName = file.completeBaseName().trimmed();
-            if (productName.isEmpty()) continue;
-            const uint seed = qHash(category + productName);
-            items.push_back({
-                productName,
-                category,
-                QDir::toNativeSeparators(file.absoluteFilePath()).replace("\\", "/"),
-                10.0 + double(seed % 50000) / 100.0,
-                1 + int((seed + uint(index)) % 12)
-            });
-            ++index;
-        }
+    for (const MarketplaceGoods &goods : AccountStore::goods()) {
+        if (goods.status != "已上架" || goods.stock <= 0) continue;
+        items.push_back({
+            goods.name,
+            goods.category,
+            ProductImageManager::imagePathForProduct(goods.name, goods.category, goods.imagePath),
+            goods.price,
+            goods.stock
+        });
     }
 
     return items;
@@ -354,8 +336,20 @@ void populateHomePreviewGrid(QGridLayout *grid, QWidget *viewport)
     if (!grid || !viewport) return;
     clearLayout(grid);
 
+    const QVector<CategoryDisplayItem> products = scannedCategoryItems();
+    const QStringList categories = {
+        "书籍教材", "学习资料", "电子数码", "宿舍用品",
+        "服饰鞋包", "运动器材", "代步工具", "美妆零食"
+    };
     int catIndex = 0;
-    for (const auto &cat : homeCategoryPreviews()) {
+    for (const QString &categoryName : categories) {
+        QVector<CategoryDisplayItem> categoryProducts;
+        for (const auto &product : products) {
+            if (product.category == categoryName) categoryProducts.push_back(product);
+            if (categoryProducts.size() == 4) break;
+        }
+        if (categoryProducts.isEmpty()) continue;
+
         auto *card = new QFrame;
         card->setObjectName("CategoryCard");
         card->setFixedSize(250, 220);
@@ -364,7 +358,7 @@ void populateHomePreviewGrid(QGridLayout *grid, QWidget *viewport)
         cardLayout->setContentsMargins(12, 10, 12, 12);
         cardLayout->setSpacing(8);
         auto *titleRow = new QHBoxLayout;
-        auto *title = new QLabel(cat.category);
+        auto *title = new QLabel(categoryName);
         title->setObjectName("ProductName");
         auto *arrow = new QLabel(">");
         arrow->setObjectName("ProductPrice");
@@ -376,21 +370,12 @@ void populateHomePreviewGrid(QGridLayout *grid, QWidget *viewport)
         auto *imgGrid = new QGridLayout;
         imgGrid->setHorizontalSpacing(8);
         imgGrid->setVerticalSpacing(6);
-        for (int i = 0; i < cat.itemNames.size() && i < 4; ++i) {
-            const QString itemName = cat.itemNames[i];
-            const QString imagePath = imagePathFromScannedItems(cat.category == "教材资料" || cat.category == "学习资料" ? QString("学习资料") : cat.category, itemName);
-            QString displayName = itemName;
-            if (displayName == "英語资料") displayName = "英语资料";
-            if (displayName == "C++程序設計") displayName = "C++程序设计";
-            if (displayName == "pencil_") displayName = "Apple Pencil";
-            if (displayName == "nike运动鞋") displayName = "Nike运动鞋";
-            if (displayName == "平板") displayName = "平板电脑";
-            if (displayName == "宿舍台灯") displayName = "台灯";
-            if (displayName == "电风扇") displayName = "风扇";
+        for (int i = 0; i < categoryProducts.size(); ++i) {
+            const CategoryDisplayItem &product = categoryProducts[i];
             auto *cell = new QVBoxLayout;
             cell->setSpacing(3);
-            cell->addWidget(categoryImageBox(imagePath, QSize(75, 60), "CategoryImage"), 0, Qt::AlignCenter);
-            auto *tag = new QLabel(displayName);
+            cell->addWidget(categoryImageBox(product.imagePath, QSize(75, 60), "CategoryImage"), 0, Qt::AlignCenter);
+            auto *tag = new QLabel(product.name);
             tag->setObjectName("TagLabel");
             tag->setAlignment(Qt::AlignCenter);
             tag->setStyleSheet("font-size: 11px;");
@@ -634,6 +619,8 @@ QWidget *UserHomeWindow::createSidebar()
     layout->addWidget(m_btnProfile);
     layout->addStretch();
 
+    layout->addWidget(LanguageManager::instance().createSelector(side));
+
     auto *backHome = new QPushButton("返回首页");
     backHome->setObjectName("Light");
     auto *logout = makeDangerButton("退出系统");
@@ -738,7 +725,7 @@ QWidget *UserHomeWindow::createHomePage()
         pill->setObjectName("Pill");
         pill->setCursor(Qt::PointingHandCursor);
         connect(pill, &QPushButton::clicked, this, [=]() {
-            if (m_categoryCombo) m_categoryCombo->setCurrentText(name);
+            if (m_categoryCombo) LanguageManager::instance().setComboValue(m_categoryCombo, name);
             updateCategoryTable();
             switchPage(m_categoryPage, m_btnCategory);
         });
@@ -807,7 +794,7 @@ QWidget *UserHomeWindow::createCategoryPage()
     toolbar->setContentsMargins(18, 18, 18, 18);
     toolbar->setSpacing(12);
     m_categoryCombo = new QComboBox;
-    m_categoryCombo->addItems({"代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"});
+    m_categoryCombo->addItems({"书籍教材", "学习资料", "电子数码", "宿舍用品", "服饰鞋包", "运动器材", "代步工具", "美妆零食"});
     m_minPriceEdit = new QLineEdit; m_minPriceEdit->setPlaceholderText("在当前分类中搜索商品...");
     m_categorySearchEdit = m_minPriceEdit;
     m_maxPriceEdit = new QLineEdit; m_maxPriceEdit->setPlaceholderText("最高价");
@@ -830,7 +817,7 @@ QWidget *UserHomeWindow::createCategoryPage()
         pill->setCursor(Qt::PointingHandCursor);
         m_categoryPillButtons.push_back(pill);
         connect(pill, &QPushButton::clicked, this, [=]() {
-            m_categoryCombo->setCurrentText(name);
+            LanguageManager::instance().setComboValue(m_categoryCombo, name);
             for (auto *btn : m_categoryPillButtons) {
                 btn->setProperty("active", btn == pill);
                 btn->style()->unpolish(btn);
@@ -878,7 +865,7 @@ QWidget *UserHomeWindow::createCategoryPage()
     layout->addWidget(categoryPanel, 1);
     connect(filter, &QPushButton::clicked, this, &UserHomeWindow::updateCategoryTable);
     connect(m_categorySearchEdit, &QLineEdit::returnPressed, this, &UserHomeWindow::updateCategoryTable);
-    m_categoryCombo->setCurrentText("代步工具");
+    LanguageManager::instance().setComboValue(m_categoryCombo, "代步工具");
     return page;
 }
 
@@ -951,7 +938,7 @@ QWidget *UserHomeWindow::createSellPage()
     form->setContentsMargins(24, 22, 24, 22);
     form->setSpacing(12);
     m_sellNameEdit = new QLineEdit; m_sellNameEdit->setPlaceholderText("商品名称");
-    m_sellCategoryCombo = new QComboBox; m_sellCategoryCombo->addItems({"代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"});
+    m_sellCategoryCombo = new QComboBox; m_sellCategoryCombo->addItems({"书籍教材", "学习资料", "电子数码", "宿舍用品", "服饰鞋包", "运动器材", "代步工具", "美妆零食"});
     m_sellPriceEdit = new QLineEdit; m_sellPriceEdit->setPlaceholderText("价格");
     m_sellStockSpin = new QSpinBox; m_sellStockSpin->setRange(1, 9999); m_sellStockSpin->setValue(1);
     m_sellConditionEdit = new QLineEdit; m_sellConditionEdit->setPlaceholderText("成色，例如 九成新 / 八成新");
@@ -1075,7 +1062,6 @@ void UserHomeWindow::loadGoodsData()
             m_goods.push_back({g.id, g.name, g.category, g.price, g.stock});
         }
     }
-    appendFallbackTravelGoods(m_goods);
     m_currentItems = m_goods;
 }
 
@@ -1111,7 +1097,9 @@ void UserHomeWindow::updateCategoryTable()
 {
     if (!m_categoryTable) return;
     QVector<CategoryDisplayItem> result;
-    const QString cat = m_categoryCombo ? m_categoryCombo->currentText() : QString("代步工具");
+    const QString cat = m_categoryCombo
+                            ? LanguageManager::instance().comboValue(m_categoryCombo)
+                            : QString("代步工具");
     const QString keyword = m_categorySearchEdit ? m_categorySearchEdit->text().trimmed() : QString();
     for (const auto &g : scannedCategoryItems()) {
         if (keyword.isEmpty()) {
@@ -1500,7 +1488,7 @@ void UserHomeWindow::removeSelectedCartItem()
 void UserHomeWindow::submitGoodsForSale()
 {
     const QString name = m_sellNameEdit->text().trimmed();
-    const QString category = m_sellCategoryCombo->currentText();
+    const QString category = LanguageManager::instance().comboValue(m_sellCategoryCombo);
     const double price = m_sellPriceEdit->text().toDouble();
     const int stock = m_sellStockSpin->value();
     const QString condition = m_sellConditionEdit->text().trimmed().isEmpty() ? "八成新" : m_sellConditionEdit->text().trimmed();

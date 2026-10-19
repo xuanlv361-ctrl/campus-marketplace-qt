@@ -2,6 +2,7 @@
 
 #include "accountstore.h"
 #include "goodswindow.h"
+#include "languagemanager.h"
 #include "mainwindow.h"
 #include "orderswindow.h"
 #include "statswindow.h"
@@ -449,6 +450,7 @@ AdminWindow::AdminWindow(MainWindow *mainWindow, QWidget *parent)
     sidebarLayout->addWidget(btnUsers);
     sidebarLayout->addWidget(btnStats);
     sidebarLayout->addStretch();
+    sidebarLayout->addWidget(LanguageManager::instance().createSelector(sidebar));
     sidebarLayout->addWidget(btnHome);
     sidebarLayout->addWidget(btnBack);
 

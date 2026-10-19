@@ -1,6 +1,7 @@
 ﻿#include "adminloginwindow.h"
 
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "mainwindow.h"
 
 #include <QFrame>
@@ -193,6 +194,11 @@ AdminLoginWindow::AdminLoginWindow(QWidget *welcomeWindow, QWidget *parent)
     cardRow->addStretch();
 
     shellLayout->addWidget(offerBar);
+    auto *languageRow = new QHBoxLayout;
+    languageRow->setContentsMargins(0, 12, 20, 0);
+    languageRow->addStretch();
+    languageRow->addWidget(LanguageManager::instance().createSelector(shell));
+    shellLayout->addLayout(languageRow);
     shellLayout->addStretch();
     shellLayout->addLayout(cardRow);
     shellLayout->addStretch();

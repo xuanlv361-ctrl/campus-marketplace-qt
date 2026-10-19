@@ -1,6 +1,7 @@
 ﻿#include "userloginwindow.h"
 
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "registerwindow.h"
 #include "userhomewindow.h"
 
@@ -194,6 +195,11 @@ UserLoginWindow::UserLoginWindow(QWidget *welcomeWindow, QWidget *parent)
     cardRow->addStretch();
 
     shellLayout->addWidget(offerBar);
+    auto *languageRow = new QHBoxLayout;
+    languageRow->setContentsMargins(0, 12, 20, 0);
+    languageRow->addStretch();
+    languageRow->addWidget(LanguageManager::instance().createSelector(shell));
+    shellLayout->addLayout(languageRow);
     shellLayout->addStretch();
     shellLayout->addLayout(cardRow);
     shellLayout->addStretch();

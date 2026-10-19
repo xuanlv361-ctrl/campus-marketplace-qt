@@ -1,6 +1,7 @@
 ﻿#include "cartwindow.h"
 
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "productimagemanager.h"
 
 #include <QAbstractItemView>
@@ -230,6 +231,7 @@ CartWindow::CartWindow(const QStringList &cartItems, const QString &buyerName, Q
     sideLayout->addWidget(historyNav);
     sideLayout->addWidget(profileNav);
     sideLayout->addStretch();
+    sideLayout->addWidget(LanguageManager::instance().createSelector(sidebar));
     auto *userHint = new QLabel("Hi, " + m_buyerName);
     userHint->setObjectName("UserHint");
     userHint->setAlignment(Qt::AlignCenter);

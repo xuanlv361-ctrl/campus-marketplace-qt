@@ -1,6 +1,7 @@
 ﻿#include "historywindow.h"
 
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "productimagemanager.h"
 #include "welcomewindow.h"
 
@@ -195,6 +196,7 @@ HistoryWindow::HistoryWindow(const QStringList &historyItems, const QString &use
     sideLayout->addWidget(historyNav);
     sideLayout->addWidget(profileNav);
     sideLayout->addStretch();
+    sideLayout->addWidget(LanguageManager::instance().createSelector(sidebar));
     auto *userHint = new QLabel("Hi, " + m_username);
     userHint->setObjectName("SidebarUser");
     userHint->setAlignment(Qt::AlignCenter);

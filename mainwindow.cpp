@@ -6,6 +6,7 @@
 #include "accountstore.h"
 #include "adminwindow.h"
 #include "goodswindow.h"
+#include "languagemanager.h"
 #include "orderswindow.h"
 #include "statswindow.h"
 #include "userswindow.h"
@@ -225,6 +226,8 @@ QWidget *MainWindow::createSidebar()
     layout->addWidget(m_btnStats);
     layout->addStretch();
 
+    layout->addWidget(LanguageManager::instance().createSelector(side));
+
     auto *home = new QPushButton("返回后台首页");
     home->setObjectName("Light");
     auto *logout = makeDangerButton("退出系统");
@@ -323,7 +326,7 @@ QWidget *MainWindow::createGoodsPage()
     m_goodsSearchEdit = new QLineEdit;
     m_goodsSearchEdit->setPlaceholderText("搜索商品名称 / ID / 分类 / 卖家");
     m_goodsCategoryCombo = new QComboBox;
-    m_goodsCategoryCombo->addItems({"全部分类", "代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"});
+    m_goodsCategoryCombo->addItems({"全部分类", "书籍教材", "学习资料", "电子数码", "宿舍用品", "服饰鞋包", "运动器材", "代步工具", "美妆零食"});
     m_goodsStatusCombo = new QComboBox;
     m_goodsStatusCombo->addItems({"全部状态", "已上架", "待审核", "已驳回", "已下架"});
     auto *search = makePrimaryButton("查询");
@@ -625,8 +628,12 @@ void MainWindow::refreshGoodsTable(bool pendingOnly)
 {
     if (!m_goodsTable) return;
     const QString keyword = m_goodsSearchEdit ? m_goodsSearchEdit->text().trimmed() : QString();
-    const QString category = m_goodsCategoryCombo ? m_goodsCategoryCombo->currentText() : QString("全部分类");
-    const QString status = m_goodsStatusCombo ? m_goodsStatusCombo->currentText() : QString("全部状态");
+    const QString category = m_goodsCategoryCombo
+                                 ? LanguageManager::instance().comboValue(m_goodsCategoryCombo)
+                                 : QString("全部分类");
+    const QString status = m_goodsStatusCombo
+                               ? LanguageManager::instance().comboValue(m_goodsStatusCombo)
+                               : QString("全部状态");
     m_goodsTable->setRowCount(0);
     const auto &goods = AccountStore::goods();
 
@@ -669,7 +676,9 @@ void MainWindow::refreshOrdersTable()
     m_ordersTable->setRowCount(0);
     const auto &orders = AccountStore::orders();
     const QString keyword = m_ordersSearchEdit ? m_ordersSearchEdit->text().trimmed() : QString();
-    const QString statusFilter = m_ordersStatusCombo ? m_ordersStatusCombo->currentText() : QString("全部状态");
+    const QString statusFilter = m_ordersStatusCombo
+                                     ? LanguageManager::instance().comboValue(m_ordersStatusCombo)
+                                     : QString("全部状态");
 
     int pending = 0, done = 0, cancel = 0;
     for (const auto &o : orders) {
@@ -704,8 +713,12 @@ void MainWindow::refreshUsersTable()
     m_usersTable->setRowCount(0);
     const auto &users = AccountStore::users();
     const QString keyword = m_usersSearchEdit ? m_usersSearchEdit->text().trimmed() : QString();
-    const QString roleFilter = m_usersRoleCombo ? m_usersRoleCombo->currentText() : QString("全部角色");
-    const QString statusFilter = m_usersStatusCombo ? m_usersStatusCombo->currentText() : QString("全部状态");
+    const QString roleFilter = m_usersRoleCombo
+                                   ? LanguageManager::instance().comboValue(m_usersRoleCombo)
+                                   : QString("全部角色");
+    const QString statusFilter = m_usersStatusCombo
+                                     ? LanguageManager::instance().comboValue(m_usersStatusCombo)
+                                     : QString("全部状态");
 
     int normal = 0, disabled = 0, admins = 0;
     for (int i = 0; i < users.size(); ++i) {
@@ -740,7 +753,7 @@ void MainWindow::refreshStatsPage()
     if (!m_statsTable) return;
     struct S { int count = 0; int stock = 0; int sales = 0; int pending = 0; double amount = 0; };
     QMap<QString, S> stats;
-    const QStringList categories = {"代步工具", "电子数码", "服饰鞋包", "美妆零食", "宿舍用品", "学习资料", "运动器材"};
+    const QStringList categories = {"书籍教材", "学习资料", "电子数码", "宿舍用品", "服饰鞋包", "运动器材", "代步工具", "美妆零食"};
     auto normalizedCategory = [](const QString &category) {
         const QString text = category.trimmed();
         if (text == "代步工具" || text.contains("代步")) return QString("代步工具");

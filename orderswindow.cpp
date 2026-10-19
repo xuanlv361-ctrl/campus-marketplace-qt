@@ -1,5 +1,6 @@
 ﻿#include "orderswindow.h"
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "mainwindow.h"
 #include "welcomewindow.h"
 
@@ -106,6 +107,7 @@ QFrame *createSidebar(const QString &active, MainWindow *mainWindow, QWidget *se
         layout->addWidget(btn);
     }
     layout->addStretch();
+    layout->addWidget(LanguageManager::instance().createSelector(sidebar));
     auto *home = sidebarButton("↩  返回首页");
     QObject::connect(home, &QPushButton::clicked, self, [=]() { auto *w = new WelcomeWindow(); w->show(); self->hide(); });
     auto *exit = sidebarButton("🚪  退出系统", "ExitButton");
@@ -244,7 +246,7 @@ bool editOrderDialog(QWidget *parent, const QString &title, const OrderItem &ini
     result->buyer = buyerEdit->text().trimmed();
     result->quantity = quantitySpin->value();
     result->price = QString::number(priceSpin->value(), 'f', 2);
-    result->status = statusBox->currentText();
+    result->status = LanguageManager::instance().comboValue(statusBox);
     return true;
 }
 
@@ -451,7 +453,9 @@ void OrdersWindow::loadSampleData()
 {
     m_orders.clear();
     const QString keyword = editSearch ? editSearch->text().trimmed() : QString();
-    const QString status = comboStatus ? comboStatus->currentText() : QString("全部状态");
+    const QString status = comboStatus
+                               ? LanguageManager::instance().comboValue(comboStatus)
+                               : QString("全部状态");
     m_totalRows = AccountStore::orderCount(keyword, status);
     const int offset = m_page * m_pageSize;
     for (const OrderRecord &order : AccountStore::searchOrders(keyword, status, m_pageSize, offset)) {

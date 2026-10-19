@@ -1,6 +1,7 @@
 #include "registerwindow.h"
 
 #include "accountstore.h"
+#include "languagemanager.h"
 
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -145,6 +146,10 @@ RegisterWindow::RegisterWindow(QWidget *loginWindow, QWidget *parent)
     cardRow->addWidget(card);
     cardRow->addStretch();
 
+    auto *languageRow = new QHBoxLayout;
+    languageRow->addStretch();
+    languageRow->addWidget(LanguageManager::instance().createSelector(this));
+    pageLayout->addLayout(languageRow);
     pageLayout->addStretch();
     pageLayout->addLayout(cardRow);
     pageLayout->addStretch();

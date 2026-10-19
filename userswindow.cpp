@@ -1,5 +1,6 @@
 ﻿#include "userswindow.h"
 #include "accountstore.h"
+#include "languagemanager.h"
 #include "mainwindow.h"
 #include "welcomewindow.h"
 
@@ -103,6 +104,7 @@ QFrame *createSidebar(const QString &active, MainWindow *mainWindow, QWidget *se
         layout->addWidget(btn);
     }
     layout->addStretch();
+    layout->addWidget(LanguageManager::instance().createSelector(sidebar));
     auto *home = sidebarButton("↩  返回首页");
     QObject::connect(home, &QPushButton::clicked, self, [=]() { auto *w = new WelcomeWindow(); w->show(); self->hide(); });
     auto *exit = sidebarButton("🚪  退出系统", "ExitButton");
@@ -167,7 +169,7 @@ bool editUserDialog(QWidget *parent, const QString &title, const UserItem &initi
     statusBox->setCurrentIndex(statusIndex >= 0 ? statusIndex : 0);
 
     auto *preferenceBox = new QComboBox;
-    const QStringList categories = {"电子数码", "学习资料", "宿舍用品", "运动器材", "代步工具", "服饰鞋包", "美妆零食"};
+    const QStringList categories = {"书籍教材", "学习资料", "电子数码", "宿舍用品", "服饰鞋包", "运动器材", "代步工具", "美妆零食"};
     preferenceBox->addItems(categories);
     const int preferenceIndex = categories.indexOf(initial.preference);
     preferenceBox->setCurrentIndex(preferenceIndex >= 0 ? preferenceIndex : 0);
@@ -209,9 +211,9 @@ bool editUserDialog(QWidget *parent, const QString &title, const UserItem &initi
     result->password = passwordEdit->text().trimmed();
     result->email = emailEdit->text().trimmed();
     result->phone = phoneEdit->text().trimmed();
-    result->role = roleBox->currentText();
-    result->status = statusBox->currentText();
-    result->preference = preferenceBox->currentText();
+    result->role = LanguageManager::instance().comboValue(roleBox);
+    result->status = LanguageManager::instance().comboValue(statusBox);
+    result->preference = LanguageManager::instance().comboValue(preferenceBox);
     return true;
 }
 
@@ -569,8 +571,12 @@ void UsersWindow::updateTable()
 {
     m_users.clear();
     const QString keyword = editSearch ? editSearch->text().trimmed() : QString();
-    const QString role = comboRole ? comboRole->currentText() : QString("全部角色");
-    const QString status = comboStatus ? comboStatus->currentText() : QString("全部状态");
+    const QString role = comboRole
+                             ? LanguageManager::instance().comboValue(comboRole)
+                             : QString("全部角色");
+    const QString status = comboStatus
+                               ? LanguageManager::instance().comboValue(comboStatus)
+                               : QString("全部状态");
     m_totalRows = AccountStore::managedUserCount(keyword, role, status);
     const int offset = m_page * m_pageSize;
     for (const ManagedUser &user : AccountStore::managedUsers(keyword, role, status, m_pageSize, offset)) {

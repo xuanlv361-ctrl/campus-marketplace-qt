@@ -1,5 +1,6 @@
 # CMake and Qt build output
 /build/
+/build-check/
 /cmake-build-*/
 /out/
 CMakeCache.txt

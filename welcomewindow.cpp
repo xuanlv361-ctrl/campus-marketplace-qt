@@ -1,6 +1,7 @@
 ﻿#include "welcomewindow.h"
 
 #include "adminloginwindow.h"
+#include "languagemanager.h"
 #include "productimagemanager.h"
 #include "userloginwindow.h"
 
@@ -257,6 +258,7 @@ WelcomeWindow::WelcomeWindow(QWidget *parent)
     navLayout->addStretch();
     navLayout->addWidget(navItem("我要出售"));
     navLayout->addWidget(pro);
+    navLayout->addWidget(LanguageManager::instance().createSelector(nav));
     navLayout->addWidget(loginHint);
     navLayout->addWidget(navItem("菜单"));
 
@@ -304,14 +306,14 @@ WelcomeWindow::WelcomeWindow(QWidget *parent)
     resourceGrid->setHorizontalSpacing(24);
     resourceGrid->setVerticalSpacing(24);
 
-    QFrame *cameraCard = createFloatingCard(welcomeCardImagePath("佳能相机.jpg"), "摄影器材", "佳能相机");
-    QFrame *blanketCard = createFloatingCard(welcomeCardImagePath("毛毯.jpg"), "宿舍用品", "毛毯");
-    QFrame *laptopCard = createFloatingCard(welcomeCardImagePath("苹果笔记本电脑.jpg"), "电子数码", "苹果笔记本电脑");
-    QFrame *headphoneCard = createFloatingCard(welcomeCardImagePath("苹果头戴式耳机 (2).jpg"), "电子数码", "苹果头戴式耳机");
-    QFrame *coatCard = createFloatingCard(welcomeCardImagePath("外套.jpg"), "服饰箱包", "外套");
-    QFrame *perfumeCard = createFloatingCard(welcomeCardImagePath("香水.jpg"), "美妆零食", "香水");
-    QFrame *fanCard = createFloatingCard(welcomeCardImagePath("小电风扇.jpg"), "宿舍用品", "小风扇");
-    QFrame *badmintonCard = createFloatingCard(welcomeCardImagePath("羽毛球拍.jpg"), "运动用品", "羽毛球拍");
+    QFrame *cameraCard = createFloatingCard(ProductImageManager::imagePathForProduct("高等数学教材", "书籍教材"), "书籍教材", "高等数学教材");
+    QFrame *blanketCard = createFloatingCard(ProductImageManager::imagePathForProduct("保温水杯", "宿舍用品"), "宿舍用品", "保温水杯");
+    QFrame *laptopCard = createFloatingCard(ProductImageManager::imagePathForProduct("轻薄笔记本电脑", "电子数码"), "电子数码", "轻薄笔记本电脑");
+    QFrame *headphoneCard = createFloatingCard(ProductImageManager::imagePathForProduct("蓝牙耳机", "电子数码"), "电子数码", "蓝牙耳机");
+    QFrame *coatCard = createFloatingCard(ProductImageManager::imagePathForProduct("九成新运动鞋", "服饰鞋包"), "服饰鞋包", "九成新运动鞋");
+    QFrame *perfumeCard = createFloatingCard(ProductImageManager::imagePathForProduct("校园自行车", "代步工具"), "代步工具", "校园自行车");
+    QFrame *fanCard = createFloatingCard(ProductImageManager::imagePathForProduct("护眼台灯", "宿舍用品"), "宿舍用品", "护眼台灯");
+    QFrame *badmintonCard = createFloatingCard(ProductImageManager::imagePathForProduct("羽毛球拍", "运动器材"), "运动器材", "羽毛球拍");
 
     resourceGrid->addWidget(createFloatingCardSlot(cameraCard), 0, 0);
     resourceGrid->addWidget(createFloatingCardSlot(blanketCard), 0, 1);

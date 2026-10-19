@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QHash>
 #include <QStringList>
 #include <QVector>
 
@@ -50,6 +51,32 @@ QString imageFile(const char *fileName)
 QString existingPath(const QString &path)
 {
     return QFileInfo::exists(path) ? path : QString();
+}
+
+QHash<QString, QString> bundledProductImages()
+{
+    return {
+        {text("高等数学教材"), "calculus_textbook.jpg"},
+        {text("C++ 程序设计"), "cpp_textbook.jpg"},
+        {text("雅思备考资料"), "ielts_guide.jpg"},
+        {text("科学计算器"), "calculator.jpg"},
+        {text("二手 iPhone 12"), "iphone12.jpg"},
+        {text("蓝牙耳机"), "bluetooth_headphones.jpg"},
+        {text("轻薄笔记本电脑"), "laptop.jpg"},
+        {text("机械键盘"), "mechanical_keyboard.jpg"},
+        {text("护眼台灯"), "desk_lamp.jpg"},
+        {text("宿舍收纳箱"), "storage_box.jpg"},
+        {text("保温水杯"), "water_bottle.jpg"},
+        {text("桌面小风扇"), "desk_fan.jpg"},
+        {text("九成新运动鞋"), "sneakers.jpg"},
+        {text("校园双肩包"), "backpack.jpg"},
+        {text("秋季外套"), "coat.jpg"},
+        {text("羽毛球拍"), "badminton_racket.jpg"},
+        {text("篮球"), "basketball.jpg"},
+        {text("瑜伽垫"), "yoga_mat.jpg"},
+        {text("校园自行车"), "bicycle.jpg"},
+        {text("折叠滑板车"), "scooter.jpg"}
+    };
 }
 
 QString firstExisting(std::initializer_list<QString> paths)
@@ -172,10 +199,48 @@ QString ProductImageManager::getImagePath(const QString &productName)
     return imagePathForProduct(productName, QString());
 }
 
-QString ProductImageManager::imagePathForProduct(const QString &productName, const QString &category)
+QString ProductImageManager::resolveConfiguredPath(const QString &configuredPath)
+{
+    const QString path = QDir::fromNativeSeparators(configuredPath.trimmed());
+    if (path.isEmpty()) return QString();
+
+    const QFileInfo info(path);
+    if (info.isAbsolute() && info.exists()) return QDir::cleanPath(info.absoluteFilePath());
+
+    QStringList candidates = {
+        QDir(QCoreApplication::applicationDirPath()).filePath(path),
+        QDir(QCoreApplication::applicationDirPath()).filePath("../" + path),
+        QDir::current().filePath(path)
+    };
+    if (!path.startsWith("ui_assets/")) {
+        candidates << QDir(QCoreApplication::applicationDirPath()).filePath("ui_assets/" + path)
+                   << QDir::current().filePath("ui_assets/" + path);
+    }
+    const QString root = externalImageRoot();
+    if (!root.isEmpty()) candidates << QDir(root).filePath(path);
+
+    for (const QString &candidate : candidates) {
+        if (QFileInfo::exists(candidate)) return QDir::cleanPath(candidate);
+    }
+    return QString();
+}
+
+QString ProductImageManager::imagePathForProduct(const QString &productName,
+                                                 const QString &category,
+                                                 const QString &preferredPath)
 {
     const QString name = productName.trimmed();
     const QString combined = name + " " + category.trimmed();
+
+    const QString configured = resolveConfiguredPath(preferredPath);
+    if (!configured.isEmpty()) return configured;
+
+    const auto bundled = bundledProductImages();
+    const auto exact = bundled.constFind(name);
+    if (exact != bundled.constEnd()) {
+        const QString path = bundledAsset("products/" + exact.value());
+        if (!path.isEmpty()) return path;
+    }
 
     for (const ProductImageRule &rule : imageRules()) {
         if (rule.path.isEmpty()) continue;
@@ -189,9 +254,10 @@ QString ProductImageManager::imagePathForProduct(const QString &productName, con
 
 QPixmap ProductImageManager::pixmapForProduct(const QString &productName,
                                               const QString &category,
-                                              const QSize &targetSize)
+                                              const QSize &targetSize,
+                                              const QString &preferredPath)
 {
-    QPixmap pix(imagePathForProduct(productName, category));
+    QPixmap pix(imagePathForProduct(productName, category, preferredPath));
     if (!pix.isNull() && targetSize.isValid()) {
         return pix.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
