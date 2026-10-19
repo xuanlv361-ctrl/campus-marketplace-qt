@@ -87,6 +87,7 @@ set(MYSQL_ROOT "C:/Program Files/MySQL/MySQL Server 8.0" CACHE PATH
 find_path(MYSQL_INCLUDE_DIR
     NAMES mysql.h
     PATHS "${MYSQL_ROOT}/include"
+    PATH_SUFFIXES mysql mariadb
     REQUIRED
 )
 
